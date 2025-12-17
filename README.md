@@ -166,23 +166,7 @@ python manage.py shell
 
 ## 🚀 Production Deployment
 
-### Fly.io Deployment (Recommended)
-
-For quick and easy deployment, see **[FLY_IO_DEPLOYMENT.md](FLY_IO_DEPLOYMENT.md)** for step-by-step instructions.
-
-Fly.io provides:
-- Automatic HTTPS
-- PostgreSQL database
-- Auto-scaling
-- Global edge network
-- Simple deployment with `fly deploy`
-
-### Other Deployment Options
-
-See `PRODUCTION_GUIDE.md` for detailed deployment instructions for:
-- VPS/Server (Gunicorn + Nginx)
-- Docker containers
-- Other PaaS platforms (DigitalOcean, AWS, etc.)
+See `PRODUCTION_GUIDE.md` for detailed deployment instructions.
 
 ### Key Points
 
@@ -193,7 +177,7 @@ See `PRODUCTION_GUIDE.md` for detailed deployment instructions for:
 - Use a production database (PostgreSQL)
 - Set up email service (Gmail, SendGrid, AWS SES, etc.)
 - Configure AWS S3 for media files (optional)
-- Use Gunicorn with Nginx reverse proxy (or Fly.io's built-in proxy)
+- Use Gunicorn with Nginx reverse proxy
 
 ### Running with Gunicorn
 
