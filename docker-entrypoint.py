@@ -8,16 +8,35 @@ def wait_for_db():
     """Wait for database to be ready"""
     print("Waiting for database...")
     
+    # Check if DATABASE_URL is provided (common in PaaS platforms like fly.io)
+    database_url = os.environ.get('DATABASE_URL')
+    
     while True:
         try:
             import psycopg
-            conn = psycopg.connect(
-                host=os.environ.get('DB_HOST', 'db'),
-                port=os.environ.get('DB_PORT', '5432'),
-                user=os.environ.get('DB_USER', 'postgres'),
-                password=os.environ.get('DB_PASSWORD', 'Teqwa123'),
-                dbname=os.environ.get('DB_NAME', 'postgres')
-            )
+            
+            if database_url:
+                # Use DATABASE_URL (fly.io format: postgres://user:pass@host:port/dbname)
+                # Parse using dj_database_url which is already in requirements.txt
+                import dj_database_url
+                db_config = dj_database_url.parse(database_url)
+                conn = psycopg.connect(
+                    host=db_config.get('HOST', 'localhost'),
+                    port=db_config.get('PORT', 5432),
+                    user=db_config.get('USER', 'postgres'),
+                    password=db_config.get('PASSWORD', ''),
+                    dbname=db_config.get('NAME', 'postgres')
+                )
+            else:
+                # Use individual environment variables
+                conn = psycopg.connect(
+                    host=os.environ.get('DB_HOST', 'db'),
+                    port=os.environ.get('DB_PORT', '5432'),
+                    user=os.environ.get('DB_USER', 'postgres'),
+                    password=os.environ.get('DB_PASSWORD', 'Teqwa123'),
+                    dbname=os.environ.get('DB_NAME', 'postgres')
+                )
+            
             conn.close()
             print("Database is ready!")
             break

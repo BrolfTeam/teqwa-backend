@@ -31,7 +31,9 @@ Django REST Framework backend for the Teqwa mosque management platform.
 
 4. **Configure environment variables**:
    ```bash
-   cp .env.example .env  # Create .env file if needed
+   cp .env.example .env  # Copy example file
+   # Or for development:
+   cp .env.development.example .env
    # Edit .env with your settings
    ```
 
@@ -164,7 +166,23 @@ python manage.py shell
 
 ## 🚀 Production Deployment
 
-See `PRODUCTION_GUIDE.md` for detailed deployment instructions.
+### Fly.io Deployment (Recommended)
+
+For quick and easy deployment, see **[FLY_IO_DEPLOYMENT.md](FLY_IO_DEPLOYMENT.md)** for step-by-step instructions.
+
+Fly.io provides:
+- Automatic HTTPS
+- PostgreSQL database
+- Auto-scaling
+- Global edge network
+- Simple deployment with `fly deploy`
+
+### Other Deployment Options
+
+See `PRODUCTION_GUIDE.md` for detailed deployment instructions for:
+- VPS/Server (Gunicorn + Nginx)
+- Docker containers
+- Other PaaS platforms (DigitalOcean, AWS, etc.)
 
 ### Key Points
 
@@ -175,7 +193,7 @@ See `PRODUCTION_GUIDE.md` for detailed deployment instructions.
 - Use a production database (PostgreSQL)
 - Set up email service (Gmail, SendGrid, AWS SES, etc.)
 - Configure AWS S3 for media files (optional)
-- Use Gunicorn with Nginx reverse proxy
+- Use Gunicorn with Nginx reverse proxy (or Fly.io's built-in proxy)
 
 ### Running with Gunicorn
 
