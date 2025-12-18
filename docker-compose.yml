@@ -10,6 +10,9 @@ services:
     env_file: .env
     expose:
       - "8000"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     networks:
       - teqwa_network
   # 2. React Frontend (Build Stage)
@@ -33,7 +36,7 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro # SSL certificates
       # Frontend is deployed on Vercel, so no frontend build volume needed
-      - static_volume:/app/static
+      - static_volume:/app/staticfiles
       - media_volume:/app/media
     depends_on:
       - backend
