@@ -35,32 +35,48 @@ SECRET_KEY = os.environ.get('SECRET_KEY', env('SECRET_KEY', default='django-inse
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', '1') in ['1', 'True', 'true']
 
-# ALLOWED_HOSTS - Include EC2 IP, localhost, and any from environment
-default_hosts = 'localhost,127.0.0.1,0.0.0.0,56.228.17.128'
+# ALLOWED_HOSTS - Include EC2 IP, localhost, backend (Docker service name), and any from environment
+# Also include variations with ports for Docker internal communication
+default_hosts = 'localhost,127.0.0.1,0.0.0.0,56.228.17.128,backend,backend:8000'
+
+# Get ALLOWED_HOSTS from environment, but merge with defaults to ensure backend is always included
+env_allowed_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if env_allowed_hosts:
+    # Merge environment hosts with defaults (ensure backend variants are always included)
+    env_hosts_list = [h.strip() for h in env_allowed_hosts.split(',') if h.strip()]
+    default_hosts_list = [h.strip() for h in default_hosts.split(',') if h.strip()]
+    # Combine and deduplicate, prioritizing env hosts
+    combined_hosts = list(dict.fromkeys(env_hosts_list + default_hosts_list))
+    final_hosts_str = ','.join(combined_hosts)
+else:
+    final_hosts_str = default_hosts
+
 # #region agent log
 import json
 import time
 log_path = '/tmp/debug.log'  # Use /tmp for easier access in container
 try:
-    env_allowed_hosts = os.environ.get('ALLOWED_HOSTS', default_hosts)
+    final_hosts_list = [host.strip() for host in final_hosts_str.split(',') if host.strip()]
     with open(log_path, 'a') as f:
         f.write(json.dumps({
             'sessionId': 'debug-session',
-            'runId': 'run1',
+            'runId': 'post-fix-v3',
             'hypothesisId': 'A',
             'location': 'settings.py:ALLOWED_HOSTS',
             'message': 'ALLOWED_HOSTS configuration',
             'data': {
                 'env_value': env_allowed_hosts,
                 'default_hosts': default_hosts,
-                'final_hosts': [host.strip() for host in env_allowed_hosts.split(',') if host.strip()]
+                'final_hosts': final_hosts_list,
+                'merged': True
             },
             'timestamp': int(time.time() * 1000)
         }) + '\n')
 except Exception:
     pass
 # #endregion
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', default_hosts).split(',') if host.strip()]
+
+ALLOWED_HOSTS = [host.strip() for host in final_hosts_str.split(',') if host.strip()]
 
 # HTTPS Security Settings (only in production)
 if not DEBUG:
