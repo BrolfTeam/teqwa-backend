@@ -13,8 +13,17 @@ services:
       - "8000"
     networks:
       - teqwa_network
+  # 2. React Frontend (Build Stage)
+#  frontend:
+  #  build:
+   #   context: ../teqwa-frontend
+    #  dockerfile: Dockerfile
+    #container_name: teqwa_frontend
+    # This container just builds the files, Nginx will serve them.
+   # networks:
+    #  - teqwa_network
 
-  # 2. Nginx (Reverse Proxy + SSL)
+  # 3. Nginx (The Entry Point)
   nginx:
     image: nginx:stable-alpine
     container_name: teqwa_nginx
