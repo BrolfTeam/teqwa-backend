@@ -37,6 +37,29 @@ DEBUG = os.environ.get('DEBUG', '1') in ['1', 'True', 'true']
 
 # ALLOWED_HOSTS - Include EC2 IP, localhost, and any from environment
 default_hosts = 'localhost,127.0.0.1,0.0.0.0,56.228.17.128'
+# #region agent log
+import json
+import time
+log_path = '/tmp/debug.log'  # Use /tmp for easier access in container
+try:
+    env_allowed_hosts = os.environ.get('ALLOWED_HOSTS', default_hosts)
+    with open(log_path, 'a') as f:
+        f.write(json.dumps({
+            'sessionId': 'debug-session',
+            'runId': 'run1',
+            'hypothesisId': 'A',
+            'location': 'settings.py:ALLOWED_HOSTS',
+            'message': 'ALLOWED_HOSTS configuration',
+            'data': {
+                'env_value': env_allowed_hosts,
+                'default_hosts': default_hosts,
+                'final_hosts': [host.strip() for host in env_allowed_hosts.split(',') if host.strip()]
+            },
+            'timestamp': int(time.time() * 1000)
+        }) + '\n')
+except Exception:
+    pass
+# #endregion
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', default_hosts).split(',') if host.strip()]
 
 # HTTPS Security Settings (only in production)
@@ -104,6 +127,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'config.debug_middleware.DebugMiddleware',  # Debug logging - remove after fixing
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
