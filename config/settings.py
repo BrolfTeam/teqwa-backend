@@ -35,7 +35,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', env('SECRET_KEY', default='django-inse
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', '1') in ['1', 'True', 'true']
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,*').split(',') if host.strip()]
+# ALLOWED_HOSTS - Include EC2 IP, localhost, and any from environment
+default_hosts = 'localhost,127.0.0.1,0.0.0.0,56.228.17.128'
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', default_hosts).split(',') if host.strip()]
 
 # HTTPS Security Settings (only in production)
 if not DEBUG:
@@ -379,8 +381,8 @@ else:
         if frontend_url:
             CORS_ALLOWED_ORIGINS = [frontend_url]
         else:
-            # No CORS origins configured - should be set in production!
-            CORS_ALLOWED_ORIGINS = []
+            # Default to Vercel frontend if not configured
+            CORS_ALLOWED_ORIGINS = ['https://teqwa-frontend.vercel.app']
     CORS_ALLOW_ALL_ORIGINS = False  # Strict CORS in production
 
 CORS_ALLOW_CREDENTIALS = True
@@ -457,13 +459,8 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@teqwa.com')
 if DEBUG:
     FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
 else:
-    # Production: Must be set via environment variable (no default)
-    FRONTEND_URL = env('FRONTEND_URL', default=None)
-    if not FRONTEND_URL:
-        raise ValueError(
-            "FRONTEND_URL environment variable must be set in production. "
-            "Set it to your frontend domain (e.g., https://yourdomain.com)"
-        )
+    # Production: Default to Vercel frontend, but can be overridden via env
+    FRONTEND_URL = env('FRONTEND_URL', default='https://teqwa-frontend.vercel.app')
 
 # Chapa Payment Configuration
 CHAPA_SECRET_KEY = env('CHAPA_SECRET_KEY', default='')
