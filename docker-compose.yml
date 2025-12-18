@@ -14,17 +14,7 @@ services:
     networks:
       - teqwa_network
 
-  # 2. React Frontend (Build Stage)
-  frontend:
-    build:
-      context: ../teqwa-frontend
-      dockerfile: Dockerfile
-    container_name: teqwa_frontend
-    # This container just builds the files, Nginx will serve them.
-    networks:
-      - teqwa_network
-
-  # 3. Nginx (The Entry Point)
+  # 2. Nginx (Reverse Proxy + SSL)
   nginx:
     image: nginx:stable-alpine
     container_name: teqwa_nginx
@@ -34,7 +24,7 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro # SSL certificates
-      - ../teqwa-frontend/dist:/usr/share/nginx/html:ro # Points to React build
+      # Frontend is deployed on Vercel, so no frontend build volume needed
       - static_volume:/app/static
       - media_volume:/app/media
     depends_on:
