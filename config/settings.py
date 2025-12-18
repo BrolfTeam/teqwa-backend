@@ -80,12 +80,12 @@ ALLOWED_HOSTS = [host.strip() for host in final_hosts_str.split(',') if host.str
 
 # HTTPS Security Settings (only in production)
 if not DEBUG:
-    # Force HTTPS redirects
-    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
+    # Force HTTPS redirects - DISABLED for HTTP-only deployment (can enable when SSL is configured)
+    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=False)
     
-    # Use secure cookies
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # Use secure cookies - DISABLED for HTTP-only deployment
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
     
     # HSTS (HTTP Strict Transport Security) - force HTTPS for 1 year
     SECURE_HSTS_SECONDS = 31536000  # 1 year

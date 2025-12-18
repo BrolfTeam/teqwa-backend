@@ -1,4 +1,3 @@
-version: ''
 
 services:
   # 1. Django Backend
