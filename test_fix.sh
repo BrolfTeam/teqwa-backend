@@ -24,16 +24,24 @@ echo "4. Clearing debug log..."
 docker compose exec backend rm -f /tmp/debug.log
 echo ""
 
-echo "5. Testing request..."
-docker compose exec nginx wget -O- http://backend:8000/api/ 2>&1
+echo "5. Testing request (with timeout)..."
+timeout 10 docker compose exec nginx wget -O- http://backend:8000/api/ 2>&1 || echo "Request timed out or failed"
 echo ""
 
 echo "6. Debug log contents:"
-docker compose exec backend cat /tmp/debug.log 2>/dev/null | python3 -m json.tool 2>/dev/null || docker compose exec backend cat /tmp/debug.log
+if docker compose exec backend test -f /tmp/debug.log; then
+    docker compose exec backend cat /tmp/debug.log 2>/dev/null | python3 -m json.tool 2>/dev/null || docker compose exec backend cat /tmp/debug.log
+else
+    echo "Debug log file not found"
+fi
 echo ""
 
-echo "7. Backend logs (errors only):"
-docker compose logs --tail=50 backend | grep -E "DisallowedHost|ERROR|400|200 OK|Listening"
+echo "7. Backend logs (last 30 lines):"
+docker compose logs --tail=30 backend
+echo ""
+
+echo "7b. Backend logs (errors only):"
+docker compose logs --tail=50 backend | grep -E "DisallowedHost|ERROR|400|200|Listening|gunicorn" || echo "No matching log entries"
 echo ""
 
 echo "8. Testing from outside..."
