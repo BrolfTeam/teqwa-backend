@@ -51,31 +51,6 @@ if env_allowed_hosts:
 else:
     final_hosts_str = default_hosts
 
-# #region agent log
-import json
-import time
-log_path = '/tmp/debug.log'  # Use /tmp for easier access in container
-try:
-    final_hosts_list = [host.strip() for host in final_hosts_str.split(',') if host.strip()]
-    with open(log_path, 'a') as f:
-        f.write(json.dumps({
-            'sessionId': 'debug-session',
-            'runId': 'post-fix-v3',
-            'hypothesisId': 'A',
-            'location': 'settings.py:ALLOWED_HOSTS',
-            'message': 'ALLOWED_HOSTS configuration',
-            'data': {
-                'env_value': env_allowed_hosts,
-                'default_hosts': default_hosts,
-                'final_hosts': final_hosts_list,
-                'merged': True
-            },
-            'timestamp': int(time.time() * 1000)
-        }) + '\n')
-except Exception:
-    pass
-# #endregion
-
 ALLOWED_HOSTS = [host.strip() for host in final_hosts_str.split(',') if host.strip()]
 
 # HTTPS Security Settings (only in production)
@@ -143,7 +118,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'config.debug_middleware.DebugMiddleware',  # Debug logging - remove after fixing
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
