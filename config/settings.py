@@ -37,7 +37,7 @@ DEBUG = os.environ.get('DEBUG', '1') in ['1', 'True', 'true']
 
 # ALLOWED_HOSTS - Include EC2 IP, localhost, backend (Docker service name), and any from environment
 # Also include variations with ports for Docker internal communication
-default_hosts = 'localhost,127.0.0.1,0.0.0.0,56.228.17.128,backend,backend:8000'
+default_hosts = 'localhost,127.0.0.1,0.0.0.0,56.228.17.128,api.mujemaateqwa.org,backend,backend:8000'
 
 # Get ALLOWED_HOSTS from environment, but merge with defaults to ensure backend is always included
 env_allowed_hosts = os.environ.get('ALLOWED_HOSTS', '')
@@ -55,12 +55,12 @@ ALLOWED_HOSTS = [host.strip() for host in final_hosts_str.split(',') if host.str
 
 # HTTPS Security Settings (only in production)
 if not DEBUG:
-    # Force HTTPS redirects - DISABLED for HTTP-only deployment (can enable when SSL is configured)
-    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=False)
+    # Force HTTPS redirects - ENABLED when using SSL
+    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
     
-    # Use secure cookies - DISABLED for HTTP-only deployment
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
+    # Use secure cookies - ENABLED when using SSL
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     
     # HSTS (HTTP Strict Transport Security) - force HTTPS for 1 year
     SECURE_HSTS_SECONDS = 31536000  # 1 year
