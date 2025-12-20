@@ -67,6 +67,66 @@ class EducationalService(models.Model):
         return self.enrollments.filter(status='confirmed').count()
 
 
+class Course(models.Model):
+    """Course model - multiple courses can belong to one service"""
+    service = models.ForeignKey(EducationalService, on_delete=models.CASCADE, related_name='courses')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='taught_courses', null=True, blank=True)
+    schedule = models.CharField(max_length=200)
+    duration = models.CharField(max_length=100)
+    capacity = models.PositiveIntegerField()
+    level = models.CharField(max_length=20, choices=EducationalService.LEVEL_CHOICES)
+    age_group = models.CharField(max_length=20, choices=EducationalService.AGE_GROUP_CHOICES)
+    fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    is_free = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=EducationalService.STATUS_CHOICES, default='active')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.service.get_service_type_display()}"
+
+    @property
+    def enrolled_count(self):
+        return self.enrollments.filter(status='confirmed').count()
+
+
+class Course(models.Model):
+    """Course model - multiple courses can belong to one service"""
+    service = models.ForeignKey(EducationalService, on_delete=models.CASCADE, related_name='courses')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='taught_courses', null=True, blank=True)
+    schedule = models.CharField(max_length=200)
+    duration = models.CharField(max_length=100)
+    capacity = models.PositiveIntegerField()
+    level = models.CharField(max_length=20, choices=EducationalService.LEVEL_CHOICES)
+    age_group = models.CharField(max_length=20, choices=EducationalService.AGE_GROUP_CHOICES)
+    fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    is_free = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=EducationalService.STATUS_CHOICES, default='active')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.service.get_service_type_display()}"
+
+    @property
+    def enrolled_count(self):
+        return self.enrollments.filter(status='confirmed').count()
+
+
 class ServiceEnrollment(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -80,7 +140,9 @@ class ServiceEnrollment(models.Model):
         ('refunded', 'Refunded'),
     ]
     
-    service = models.ForeignKey(EducationalService, on_delete=models.CASCADE, related_name='enrollments')
+    # Keep service for backward compatibility, but prefer course
+    service = models.ForeignKey(EducationalService, on_delete=models.CASCADE, related_name='enrollments', null=True, blank=True)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='enrollments', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
@@ -88,10 +150,20 @@ class ServiceEnrollment(models.Model):
     notes = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ['service', 'user']
+        unique_together = [
+            ['course', 'user'],  # One user can enroll once per course
+            ['service', 'user'],  # Keep for backward compatibility
+        ]
 
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.service.title}"
+        if self.course:
+            return f"{self.user.get_full_name()} - {self.course.title}"
+        return f"{self.user.get_full_name()} - {self.service.title if self.service else 'N/A'}"
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.course and not self.service:
+            raise ValidationError('Either course or service must be provided')
 
 
 class Lecture(models.Model):

@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from .models import EducationalService, ServiceEnrollment, Lecture
-from .serializers import EducationalServiceSerializer, ServiceEnrollmentSerializer, LectureSerializer
+from .models import EducationalService, Course, ServiceEnrollment, Lecture
+from .serializers import EducationalServiceSerializer, CourseSerializer, ServiceEnrollmentSerializer, LectureSerializer
 from authentication.utils import send_admin_alert_email
 
 
@@ -59,31 +59,51 @@ def service_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def enroll_service(request, pk):
-    """Book an educational service"""
+    """Book an educational service or course"""
+    # Check if it's a course or service
+    course = None
+    service = None
+    
     try:
-        service = EducationalService.objects.get(pk=pk)
-    except EducationalService.DoesNotExist:
-        return Response({
-            'error': 'Educational service not found'
-        }, status=status.HTTP_404_NOT_FOUND)
+        course = Course.objects.get(pk=pk)
+        service = course.service
+    except Course.DoesNotExist:
+        try:
+            service = EducationalService.objects.get(pk=pk)
+        except EducationalService.DoesNotExist:
+            return Response({
+                'error': 'Service or course not found'
+            }, status=status.HTTP_404_NOT_FOUND)
     
-    if service.enrolled_count >= service.capacity:
-        return Response({
-            'error': 'Service is full'
-        }, status=status.HTTP_400_BAD_REQUEST)
+    # Check capacity
+    if course:
+        if course.enrolled_count >= course.capacity:
+            return Response({
+                'error': 'Course is full'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if ServiceEnrollment.objects.filter(course=course, user=request.user).exists():
+            return Response({
+                'error': 'Already enrolled in this course'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        if service.enrolled_count >= service.capacity:
+            return Response({
+                'error': 'Service is full'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if ServiceEnrollment.objects.filter(service=service, user=request.user).exists():
+            return Response({
+                'error': 'Already booked this service'
+            }, status=status.HTTP_400_BAD_REQUEST)
     
-    if ServiceEnrollment.objects.filter(service=service, user=request.user).exists():
-        return Response({
-            'error': 'Already booked this service'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    enrollment_data = {'service': pk}
+    enrollment_data = {'course': pk} if course else {'service': pk}
     serializer = ServiceEnrollmentSerializer(data=enrollment_data, context={'request': request})
     
     if serializer.is_valid():
         serializer.save()
         return Response({
-            'message': 'Successfully booked service',
+            'message': 'Successfully enrolled',
             'data': serializer.data
         }, status=status.HTTP_201_CREATED)
     
@@ -176,6 +196,79 @@ def create_service(request):
         serializer.save()
         return Response({
             'message': 'Educational service created successfully',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def course_list(request):
+    """List all courses"""
+    service_id = request.GET.get('service_id', '')
+    service_type = request.GET.get('type', '')
+    level = request.GET.get('level', '')
+    age_group = request.GET.get('age_group', '')
+    active_only = request.GET.get('active', '').lower() == 'true'
+    
+    courses = Course.objects.select_related('service', 'instructor').all()
+    
+    if service_id:
+        courses = courses.filter(service_id=service_id)
+    
+    if service_type:
+        courses = courses.filter(service__service_type=service_type)
+    
+    if level:
+        courses = courses.filter(level=level)
+    
+    if age_group:
+        courses = courses.filter(age_group=age_group)
+    
+    if active_only:
+        courses = courses.filter(status='active')
+    
+    serializer = CourseSerializer(courses, many=True)
+    return Response({
+        'message': 'Courses retrieved successfully',
+        'data': serializer.data,
+        'count': courses.count()
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def course_detail(request, pk):
+    """Get specific course"""
+    try:
+        course = Course.objects.select_related('service', 'instructor').get(pk=pk)
+    except Course.DoesNotExist:
+        return Response({
+            'error': 'Course not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = CourseSerializer(course)
+    return Response({
+        'message': 'Course retrieved successfully',
+        'data': serializer.data
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_course(request):
+    """Create new course (Admin/Staff only)"""
+    if request.user.role not in ['admin', 'staff']:
+        return Response({
+            'error': 'Permission denied'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    serializer = CourseSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'message': 'Course created successfully',
             'data': serializer.data
         }, status=status.HTTP_201_CREATED)
     

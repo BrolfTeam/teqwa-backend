@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EducationalService, ServiceEnrollment, Lecture
+from .models import EducationalService, Course, ServiceEnrollment, Lecture
 
 
 class EducationalServiceSerializer(serializers.ModelSerializer):
@@ -18,18 +18,35 @@ class EducationalServiceSerializer(serializers.ModelSerializer):
 
 class ServiceEnrollmentSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
-    service_title = serializers.CharField(source='service.title', read_only=True)
-    service_type = serializers.CharField(source='service.service_type', read_only=True)
+    service_title = serializers.SerializerMethodField()
+    service_type = serializers.SerializerMethodField()
+    course_title = serializers.CharField(source='course.title', read_only=True)
 
     class Meta:
         model = ServiceEnrollment
-        fields = ['id', 'service', 'user', 'user_name', 'service_title', 'service_type',
-                 'status', 'payment_status', 'enrollment_date', 'notes']
+        fields = ['id', 'service', 'course', 'user', 'user_name', 'service_title', 
+                 'service_type', 'course_title', 'status', 'payment_status', 
+                 'enrollment_date', 'notes']
         read_only_fields = ['id', 'user', 'enrollment_date']
+    
+    def get_service_title(self, obj):
+        if obj.course:
+            return obj.course.service.title
+        return obj.service.title if obj.service else None
+    
+    def get_service_type(self, obj):
+        if obj.course:
+            return obj.course.service.service_type
+        return obj.service.service_type if obj.service else None
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+    
+    def validate(self, data):
+        if not data.get('course') and not data.get('service'):
+            raise serializers.ValidationError('Either course or service must be provided')
+        return data
 
 
 class LectureSerializer(serializers.ModelSerializer):

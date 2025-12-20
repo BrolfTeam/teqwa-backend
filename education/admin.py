@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EducationalService, ServiceEnrollment, Lecture
+from .models import EducationalService, Course, ServiceEnrollment, Lecture
 
 
 @admin.register(EducationalService)
@@ -10,11 +10,19 @@ class EducationalServiceAdmin(admin.ModelAdmin):
     readonly_fields = ['enrolled_count', 'created_at', 'updated_at']
 
 
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ['title', 'service', 'instructor', 'level', 'age_group', 'capacity', 'enrolled_count', 'status']
+    list_filter = ['service__service_type', 'level', 'age_group', 'status', 'created_at']
+    search_fields = ['title', 'description', 'service__title', 'instructor__username']
+    readonly_fields = ['enrolled_count', 'created_at', 'updated_at']
+
+
 @admin.register(ServiceEnrollment)
 class ServiceEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ['user', 'service', 'status', 'payment_status', 'enrollment_date']
+    list_display = ['user', 'service', 'course', 'status', 'payment_status', 'enrollment_date']
     list_filter = ['status', 'payment_status', 'enrollment_date']
-    search_fields = ['user__username', 'service__title']
+    search_fields = ['user__username', 'service__title', 'course__title']
 
 
 @admin.register(Lecture)
