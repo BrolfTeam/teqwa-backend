@@ -17,6 +17,7 @@ class EducationalService(models.Model):
         ('fiqh', 'Fiqh (Islamic Jurisprudence)'),
         ('hadith', 'Hadith Studies'),
         ('tafseer', 'Tafseer (Quran Interpretation)'),
+        ('ders_program', 'Weekly Ders Program'),
     ]
     
     LEVEL_CHOICES = [

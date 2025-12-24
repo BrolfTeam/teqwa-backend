@@ -16,6 +16,20 @@ class EducationalServiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
+class CourseSerializer(serializers.ModelSerializer):
+    instructor_name = serializers.CharField(source='instructor.get_full_name', read_only=True)
+    enrolled_count = serializers.ReadOnlyField()
+    service_title = serializers.CharField(source='service.title', read_only=True)
+
+    class Meta:
+        model = Course
+        fields = ['id', 'service', 'service_title', 'title', 'description', 
+                 'instructor', 'instructor_name', 'schedule', 'duration', 'capacity', 
+                 'enrolled_count', 'level', 'age_group', 'fee', 'status', 
+                 'start_date', 'end_date', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
 class ServiceEnrollmentSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
     service_title = serializers.SerializerMethodField()
