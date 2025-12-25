@@ -165,11 +165,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'postgres'),
-            'USER': os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'Teqwa123'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'NAME': os.environ.get('DB_NAME', ''),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', ''),
+            'PORT': os.environ.get('DB_PORT', ''),
             'OPTIONS': {
                 'connect_timeout': 60,
             },
@@ -383,21 +383,36 @@ if DEBUG:
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
-    CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins in development
+    CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 else:
-    # Production: Get allowed origins from environment variable
-    allowed_origins = env.list('CORS_ALLOWED_ORIGINS', default=[])
-    if allowed_origins:
-        CORS_ALLOWED_ORIGINS = allowed_origins
-    else:
-        # Fallback: use FRONTEND_URL if available
-        frontend_url = env('FRONTEND_URL', default='')
-        if frontend_url:
-            CORS_ALLOWED_ORIGINS = [frontend_url]
-        else:
-            # Default to Vercel frontend if not configured
-            CORS_ALLOWED_ORIGINS = ['https://teqwa-frontend.vercel.app']
-    CORS_ALLOW_ALL_ORIGINS = False  # Strict CORS in production
+    # Production: Strict CORS policy
+    # Explicitly allow the main domain and www subdomain
+    CORS_ALLOWED_ORIGINS = [
+        "https://www.mujemaateqwa.org",
+        "https://mujemaateqwa.org",
+    ]
+    
+    # Allow additional origins from environment variable (e.g. for staging or Vercel previews)
+    env_allowed_origins = env.list('CORS_ALLOWED_ORIGINS', default=[])
+    if env_allowed_origins:
+        CORS_ALLOWED_ORIGINS.extend(env_allowed_origins)
+
+    # Disable allowing all origins
+    CORS_ALLOW_ALL_ORIGINS = False
+    
+    # CSRF Trusted Origins (Required for POST/PUT/DELETE requests)
+    CSRF_TRUSTED_ORIGINS = [
+        "https://www.mujemaateqwa.org",
+        "https://mujemaateqwa.org",
+        "https://api.mujemaateqwa.org",
+    ]
+    # Add any extra origins to CSRF trusted list as well
+    if env_allowed_origins:
+        CSRF_TRUSTED_ORIGINS.extend(env_allowed_origins)
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
