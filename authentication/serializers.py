@@ -24,10 +24,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError({"password": "Passwords don't match"})
         
-        # Prevent users from registering as admin (requires manual approval)
+        # Prevent users from registering as restricted roles (teacher, staff, admin)
         role = attrs.get('role', 'visitor')
-        if role == 'admin':
-            raise serializers.ValidationError({"role": "Admin accounts cannot be created through registration. Please contact an administrator."})
+        if role in ['admin', 'teacher', 'staff']:
+            raise serializers.ValidationError({"role": f"Accouts for '{role}' cannot be created through public registration. Please contact an administrator."})
         
         return attrs
 
