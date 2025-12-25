@@ -156,28 +156,30 @@ def create_cause(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def donation_stats(request):
-    """Get donation statistics (Admin/Staff only)"""
-    if request.user.role not in ['admin', 'staff']:
-        return Response({
-            'error': 'Permission denied'
-        }, status=status.HTTP_403_FORBIDDEN)
-    
+    """Get donation statistics (Public safe stats, full details for Admin/Staff)"""
     completed_donations = Donation.objects.filter(status='completed')
-    pending_donations = Donation.objects.filter(status='pending')
-    
     total_completed = completed_donations.aggregate(Sum('amount'))['amount__sum'] or 0
-    total_pending = pending_donations.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_completed_count = completed_donations.count()
     
+    # Base public stats
     stats = {
-        'total_completed': completed_donations.count(),
-        'total_pending': pending_donations.count(),
+        'total_completed': total_completed_count,
         'total_amount_completed': float(total_completed),
-        'total_amount_pending': float(total_pending),
-        'average_donation': float(total_completed) / completed_donations.count() if completed_donations.count() > 0 else 0,
         'currency': 'USD'
     }
+    
+    # Add sensitive stats only for admins/staff
+    if request.user.is_authenticated and hasattr(request.user, 'role') and request.user.role in ['admin', 'staff']:
+        pending_donations = Donation.objects.filter(status='pending')
+        total_pending = pending_donations.aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        stats.update({
+            'total_pending': pending_donations.count(),
+            'total_amount_pending': float(total_pending),
+            'average_donation': float(total_completed) / total_completed_count if total_completed_count > 0 else 0,
+        })
     
     return Response({
         'message': 'Donation statistics retrieved successfully',

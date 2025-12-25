@@ -34,7 +34,7 @@ class ServiceEnrollmentSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
     service_title = serializers.SerializerMethodField()
     service_type = serializers.SerializerMethodField()
-    course_title = serializers.CharField(source='course.title', read_only=True)
+    course_title = serializers.CharField(source='course.title', read_only=True, allow_null=True)
 
     class Meta:
         model = ServiceEnrollment
@@ -65,7 +65,7 @@ class ServiceEnrollmentSerializer(serializers.ModelSerializer):
 
 class LectureSerializer(serializers.ModelSerializer):
     instructor_name = serializers.CharField(source='instructor.get_full_name', read_only=True)
-    instructor_avatar = serializers.CharField(source='instructor.avatar', read_only=True)
+    instructor_avatar = serializers.CharField(source='instructor.avatar', read_only=True, allow_null=True)
     subject_display = serializers.CharField(source='get_subject_display', read_only=True)
 
     class Meta:

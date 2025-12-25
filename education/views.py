@@ -114,7 +114,11 @@ def enroll_service(request, pk):
 @permission_classes([IsAuthenticated])
 def my_enrollments(request):
     """Get user's service bookings"""
-    enrollments = ServiceEnrollment.objects.filter(user=request.user).select_related('service')
+    enrollments = ServiceEnrollment.objects.filter(user=request.user).select_related(
+        'service', 
+        'course', 
+        'course__service'
+    )
     serializer = ServiceEnrollmentSerializer(enrollments, many=True)
     
     return Response({

@@ -50,17 +50,27 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
+    role = serializers.CharField(required=False, default='visitor')
 
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
+        role = attrs.get('role')
 
         if email and password:
             user = authenticate(email=email, password=password)
             if not user:
                 raise serializers.ValidationError('Invalid credentials')
+            
             if not user.is_active:
                 raise serializers.ValidationError('User account is disabled')
+            
+            # Enforce role check if role is provided
+            if role and role != 'visitor':
+                if user.role != role:
+                    # Generic message for security, or specific for usability
+                    raise serializers.ValidationError(f'Please sign in via the {user.role.capitalize()} login page.')
+
             attrs['user'] = user
         return attrs
 
