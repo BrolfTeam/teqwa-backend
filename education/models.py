@@ -98,35 +98,6 @@ class Course(models.Model):
         return self.enrollments.filter(status='confirmed').count()
 
 
-class Course(models.Model):
-    """Course model - multiple courses can belong to one service"""
-    service = models.ForeignKey(EducationalService, on_delete=models.CASCADE, related_name='courses')
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='taught_courses', null=True, blank=True)
-    schedule = models.CharField(max_length=200)
-    duration = models.CharField(max_length=100)
-    capacity = models.PositiveIntegerField()
-    level = models.CharField(max_length=20, choices=EducationalService.LEVEL_CHOICES)
-    age_group = models.CharField(max_length=20, choices=EducationalService.AGE_GROUP_CHOICES)
-    fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    is_free = models.BooleanField(default=False)
-    status = models.CharField(max_length=20, choices=EducationalService.STATUS_CHOICES, default='active')
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.title} - {self.service.get_service_type_display()}"
-
-    @property
-    def enrolled_count(self):
-        return self.enrollments.filter(status='confirmed').count()
-
 
 class ServiceEnrollment(models.Model):
     STATUS_CHOICES = [
