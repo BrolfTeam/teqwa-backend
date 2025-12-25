@@ -99,6 +99,7 @@ def program_schedules(request, pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def register_for_program(request, pk):
     """Register user for Iʿtikāf program"""
     try:
@@ -153,21 +154,28 @@ def register_for_program(request, pk):
         'emergency_phone': request.data.get('emergency_phone', ''),
         'special_requirements': request.data.get('special_requirements', ''),
         'notes': request.data.get('notes', ''),
+        'payment_method': request.data.get('payment_method', 'card'),
+        'proof_image': request.data.get('proof_image', None)
     }
     
     serializer = ItikafRegistrationCreateSerializer(data=registration_data)
     if serializer.is_valid():
+        # Determine status based on fee
+        initial_status = 'confirmed' if program.fee == 0 else 'pending'
+        
         registration = serializer.save(
             user=request.user,
-            status='confirmed',
+            status=initial_status,
             payment_amount=program.fee
         )
-        registration.confirmed_at = timezone.now()
-        registration.save()
+        
+        if initial_status == 'confirmed':
+            registration.confirmed_at = timezone.now()
+            registration.save()
         
         result_serializer = ItikafRegistrationSerializer(registration)
         
-        # Send registration confirmation email (status will be 'confirmed' or 'waitlisted')
+        # Send registration confirmation email (status will be 'confirmed', 'waitlisted', or 'pending')
         try:
             send_itikaf_approval_email(registration, program, request.user, status=registration.status)
         except Exception as e:

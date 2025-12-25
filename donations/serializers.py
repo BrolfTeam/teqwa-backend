@@ -86,7 +86,7 @@ class DonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
         fields = ['id', 'donor_name', 'email', 'amount', 'currency', 'method', 
-                 'message', 'cause', 'cause_title', 'status', 'created_at', 'updated_at']
+                 'message', 'cause', 'cause_title', 'status', 'proof_image', 'created_at', 'updated_at']
         read_only_fields = ['id', 'status', 'created_at', 'updated_at']
 
     def create(self, validated_data):

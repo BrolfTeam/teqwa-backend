@@ -12,7 +12,11 @@ class FutsalSlotAdmin(admin.ModelAdmin):
 
 @admin.register(FutsalBooking)
 class FutsalBookingAdmin(admin.ModelAdmin):
-    list_display = ['contact_name', 'slot', 'player_count', 'status', 'created_at']
-    list_filter = ['status', 'created_at', 'slot__date']
+    list_display = ['contact_name', 'slot', 'player_count', 'status', 'payment_method', 'has_proof', 'created_at']
+    list_filter = ['status', 'payment_method', 'created_at', 'slot__date']
     search_fields = ['contact_name', 'contact_email']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at', 'proof_image']
+
+    def has_proof(self, obj):
+        return bool(obj.proof_image)
+    has_proof.boolean = True

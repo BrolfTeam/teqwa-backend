@@ -35,10 +35,15 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceEnrollment)
 class ServiceEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ['user', 'service_or_course', 'status', 'payment_status', 'enrollment_date']
-    list_filter = ['status', 'payment_status', 'enrollment_date']
+    list_display = ['user', 'service_or_course', 'status', 'payment_status', 'payment_method', 'has_proof', 'enrollment_date']
+    list_filter = ['status', 'payment_status', 'payment_method', 'enrollment_date']
     search_fields = ['user__username', 'service__title', 'course__title', 'user__email']
     autocomplete_fields = ['user', 'service', 'course']
+    readonly_fields = ['proof_image']
+
+    def has_proof(self, obj):
+        return bool(obj.proof_image)
+    has_proof.boolean = True
 
     def service_or_course(self, obj):
         if obj.course:

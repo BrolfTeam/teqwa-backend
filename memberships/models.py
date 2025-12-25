@@ -42,5 +42,13 @@ class UserMembership(models.Model):
     last_payment_date = models.DateTimeField(null=True, blank=True)
     auto_renew = models.BooleanField(default=True)
 
+    # Payment fields
+    payment_method = models.CharField(max_length=20, choices=[
+        ('card', 'Credit Card (Chapa)'),
+        ('manual_qr', 'Manual Transfer / QR Code'),
+        ('cash', 'Cash'),
+    ], default='card')
+    proof_image = models.ImageField(upload_to='memberships/proofs/', blank=True, null=True)
+
     def __str__(self):
         return f"{self.user.username} - {self.tier.name} ({self.status})"

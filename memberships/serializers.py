@@ -11,5 +11,6 @@ class UserMembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserMembership
-        fields = ['id', 'user', 'tier', 'tier_details', 'status', 'start_date', 'expiry_date', 'last_payment_date', 'auto_renew']
+        fields = ['id', 'user', 'tier', 'tier_details', 'status', 'start_date', 'expiry_date', 
+                 'last_payment_date', 'auto_renew', 'payment_method', 'proof_image']
         read_only_fields = ['user', 'status', 'start_date', 'expiry_date', 'last_payment_date']

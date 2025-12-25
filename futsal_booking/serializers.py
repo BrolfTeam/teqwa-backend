@@ -23,7 +23,7 @@ class FutsalBookingSerializer(serializers.ModelSerializer):
         model = FutsalBooking
         fields = ['id', 'slot', 'slot_info', 'user', 'user_name', 'contact_name', 
                  'contact_email', 'contact_phone', 'player_count', 'status', 
-                 'agree_to_rules', 'notes', 'created_at', 'updated_at']
+                 'agree_to_rules', 'notes', 'payment_method', 'proof_image', 'created_at', 'updated_at']
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
     def create(self, validated_data):

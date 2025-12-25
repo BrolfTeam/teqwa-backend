@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.utils import timezone
 from .models import FutsalSlot, FutsalBooking
@@ -47,6 +48,7 @@ def slot_detail(request, pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def book_slot(request, pk):
     """Book a futsal slot"""
     try:
@@ -72,7 +74,7 @@ def book_slot(request, pk):
     serializer = FutsalBookingSerializer(data=booking_data, context={'request': request})
     
     if serializer.is_valid():
-        booking = serializer.save()
+        booking = serializer.save(user=request.user, status='pending')
         # Mark slot as unavailable
         slot.available = False
         slot.save()

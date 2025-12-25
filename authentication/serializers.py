@@ -27,7 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Prevent users from registering as restricted roles (teacher, staff, admin)
         role = attrs.get('role', 'visitor')
         if role in ['admin', 'teacher', 'staff']:
-            raise serializers.ValidationError({"role": f"Accouts for '{role}' cannot be created through public registration. Please contact an administrator."})
+            raise serializers.ValidationError({"role": f"Accounts for '{role}' cannot be created through public registration. Please contact an administrator."})
         
         return attrs
 

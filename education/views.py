@@ -1,6 +1,7 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from .models import EducationalService, Course, ServiceEnrollment, Lecture
 from .serializers import EducationalServiceSerializer, CourseSerializer, ServiceEnrollmentSerializer, LectureSerializer
@@ -58,6 +59,7 @@ def service_detail(request, pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def enroll_service(request, pk):
     """Book an educational service or course"""
     # Check if it's a course or service
@@ -97,11 +99,22 @@ def enroll_service(request, pk):
                 'error': 'Already booked this service'
             }, status=status.HTTP_400_BAD_REQUEST)
     
-    enrollment_data = {'course': pk} if course else {'service': pk}
+    # Copy to mutable dict to handle both JSON and MultiPart
+    enrollment_data = request.data.copy()
+    if course:
+        enrollment_data['course'] = pk
+    else:
+        enrollment_data['service'] = pk
+
+    # Ensure payment method fields are included (already in request.data but explicit check doesn't hurt)
+    # enrollment_data['payment_method'] = request.data.get('payment_method', 'card')
+    
     serializer = ServiceEnrollmentSerializer(data=enrollment_data, context={'request': request})
     
     if serializer.is_valid():
-        serializer.save()
+        # Force status to pending and assign user
+        serializer.save(user=request.user, status='pending')
+        
         return Response({
             'message': 'Successfully enrolled',
             'data': serializer.data

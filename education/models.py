@@ -118,6 +118,13 @@ class ServiceEnrollment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    payment_method = models.CharField(max_length=20, choices=[
+        ('card', 'Credit Card (Chapa)'),
+        ('manual_qr', 'Manual Transfer / QR Code'),
+        ('cash', 'Cash'),
+        ('free', 'Free / Scholarship'),
+    ], default='free')
+    proof_image = models.ImageField(upload_to='education/proofs/', blank=True, null=True)
     enrollment_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
 

@@ -39,13 +39,23 @@ def donation_list(request):
         })
 
 
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import parser_classes
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@parser_classes([MultiPartParser, FormParser])
 def create_donation(request):
     """Create a new donation"""
+    
+    # Force status to pending for manual payments to ensure admin review
+    save_kwargs = {}
+    if request.data.get('method') == 'manual_qr' or request.data.get('payment_method') == 'manual_qr':
+        save_kwargs['status'] = 'pending'
+        
     serializer = DonationSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
-        donation = serializer.save()
+        donation = serializer.save(**save_kwargs)
         
         # Send email notifications (for completed donations or if user exists)
         user = donation.user if hasattr(donation, 'user') and donation.user else None

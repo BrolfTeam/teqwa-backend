@@ -72,7 +72,8 @@ class ItikafRegistrationSerializer(serializers.ModelSerializer):
             'program_title', 'program_start_date', 'program_end_date',
             'status', 'emergency_contact', 'emergency_phone',
             'special_requirements', 'notes',
-            'payment_status', 'payment_amount',
+            'special_requirements', 'notes',
+            'payment_status', 'payment_amount', 'payment_method', 'proof_image',
             'registered_at', 'confirmed_at', 'cancelled_at'
         ]
         read_only_fields = ['id', 'user', 'registered_at', 'confirmed_at', 'cancelled_at']

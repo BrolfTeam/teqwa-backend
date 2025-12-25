@@ -39,7 +39,7 @@ class ServiceEnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceEnrollment
         fields = ['id', 'service', 'course', 'user', 'user_name', 'service_title', 
-                 'service_type', 'course_title', 'status', 'payment_status', 
+                 'service_type', 'course_title', 'status', 'payment_status', 'payment_method', 'proof_image',
                  'enrollment_date', 'notes']
         read_only_fields = ['id', 'user', 'enrollment_date']
     

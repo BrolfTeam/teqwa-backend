@@ -39,6 +39,15 @@ class FutsalBooking(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     agree_to_rules = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
+    
+    # Payment fields
+    payment_method = models.CharField(max_length=20, choices=[
+        ('card', 'Credit Card (Chapa)'),
+        ('manual_qr', 'Manual Transfer / QR Code'),
+        ('cash', 'Cash (On Arrival)'),
+    ], default='cash')
+    proof_image = models.ImageField(upload_to='futsal/proofs/', blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

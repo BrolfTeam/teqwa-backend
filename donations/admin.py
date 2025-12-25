@@ -12,7 +12,11 @@ class DonationCauseAdmin(admin.ModelAdmin):
 
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):
-    list_display = ['donor_name', 'amount', 'cause', 'method', 'status', 'created_at']
+    list_display = ['donor_name', 'amount', 'cause', 'method', 'status', 'has_proof', 'created_at']
     list_filter = ['status', 'method', 'created_at']
     search_fields = ['donor_name', 'email']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at', 'proof_image']
+
+    def has_proof(self, obj):
+        return bool(obj.proof_image)
+    has_proof.boolean = True

@@ -41,7 +41,8 @@ class Donation(models.Model):
     ]
     
     METHOD_CHOICES = [
-        ('card', 'Credit Card'),
+        ('card', 'Credit Card (Chapa)'),
+        ('manual_qr', 'Manual Transfer / QR Code'),
         ('paypal', 'PayPal'),
         ('bank_transfer', 'Bank Transfer'),
         ('cash', 'Cash'),
@@ -55,6 +56,7 @@ class Donation(models.Model):
     message = models.TextField(blank=True)
     cause = models.ForeignKey(DonationCause, on_delete=models.CASCADE, related_name='donations')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    proof_image = models.ImageField(upload_to='donations/proofs/', blank=True, null=True, help_text='Payment proof for manual transfers')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

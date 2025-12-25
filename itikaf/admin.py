@@ -83,10 +83,14 @@ class ItikafScheduleAdmin(admin.ModelAdmin):
 
 @admin.register(ItikafRegistration)
 class ItikafRegistrationAdmin(admin.ModelAdmin):
-    list_display = ['user', 'program', 'status', 'payment_status', 'registered_at']
-    list_filter = ['status', 'payment_status', 'registered_at']
+    list_display = ['user', 'program', 'status', 'payment_status', 'payment_method', 'has_proof', 'registered_at']
+    list_filter = ['status', 'payment_status', 'payment_method', 'registered_at']
     search_fields = ['user__email', 'user__first_name', 'user__last_name', 'program__title']
-    readonly_fields = ['registered_at', 'confirmed_at', 'cancelled_at']
+    readonly_fields = ['registered_at', 'confirmed_at', 'cancelled_at', 'proof_image']
+
+    def has_proof(self, obj):
+        return bool(obj.proof_image)
+    has_proof.boolean = True
     
     def save_model(self, request, obj, form, change):
         """Override to send email when status changes"""
