@@ -22,4 +22,7 @@ urlpatterns = [
     # Lectures
     path('lectures/', views.lecture_list, name='lecture_list'),
     path('lectures/<int:pk>/', views.lecture_detail, name='lecture_detail'),
+
+    # Timetable
+    path('timetable/', views.timetable_list, name='timetable_list'),
 ]

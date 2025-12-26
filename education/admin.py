@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EducationalService, Course, ServiceEnrollment, Lecture
+from .models import EducationalService, Course, ServiceEnrollment, Lecture, TimetableEntry
 
 
 @admin.register(EducationalService)
@@ -67,3 +67,11 @@ class LectureAdmin(admin.ModelAdmin):
     def has_audio(self, obj):
         return bool(obj.audio_file)
     has_audio.boolean = True
+
+
+@admin.register(TimetableEntry)
+class TimetableEntryAdmin(admin.ModelAdmin):
+    list_display = ['title', 'day_of_week', 'time', 'imam', 'location', 'is_active']
+    list_filter = ['day_of_week', 'is_active', 'location']
+    search_fields = ['title', 'imam', 'location']
+    list_editable = ['is_active', 'time']

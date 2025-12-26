@@ -3,8 +3,8 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from .models import EducationalService, Course, ServiceEnrollment, Lecture
-from .serializers import EducationalServiceSerializer, CourseSerializer, ServiceEnrollmentSerializer, LectureSerializer
+from .models import EducationalService, Course, ServiceEnrollment, Lecture, TimetableEntry
+from .serializers import EducationalServiceSerializer, CourseSerializer, ServiceEnrollmentSerializer, LectureSerializer, TimetableEntrySerializer
 from authentication.utils import send_admin_alert_email
 
 
@@ -334,4 +334,27 @@ def lecture_detail(request, pk):
     return Response({
         'message': 'Lecture retrieved successfully',
         'data': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def timetable_list(request):
+    """List all timetable entries for weekly schedule"""
+    day = request.GET.get('day', '')
+    active_only = request.GET.get('active', '').lower() != 'false'
+    
+    entries = TimetableEntry.objects.all()
+    
+    if active_only:
+        entries = entries.filter(is_active=True)
+        
+    if day:
+        entries = entries.filter(day_of_week=day)
+        
+    serializer = TimetableEntrySerializer(entries, many=True)
+    return Response({
+        'message': 'Timetable entries retrieved successfully',
+        'data': serializer.data,
+        'count': entries.count()
     })

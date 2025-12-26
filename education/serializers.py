@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EducationalService, Course, ServiceEnrollment, Lecture
+from .models import EducationalService, Course, ServiceEnrollment, Lecture, TimetableEntry
 
 
 class EducationalServiceSerializer(serializers.ModelSerializer):
@@ -74,3 +74,11 @@ class LectureSerializer(serializers.ModelSerializer):
                  'instructor_avatar', 'subject', 'subject_display', 'video_url', 'video_file',
                  'audio_file', 'thumbnail', 'date_recorded', 'created_at']
         read_only_fields = ['id', 'created_at']
+
+
+class TimetableEntrySerializer(serializers.ModelSerializer):
+    day_display = serializers.CharField(source='get_day_of_week_display', read_only=True)
+
+    class Meta:
+        model = TimetableEntry
+        fields = ['id', 'title', 'imam', 'day_of_week', 'day_display', 'time', 'location', 'is_active']
