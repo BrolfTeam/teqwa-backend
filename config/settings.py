@@ -252,8 +252,10 @@ if not DEBUG:
                 "secret_key": AWS_SECRET_ACCESS_KEY,
                 "region_name": AWS_S3_REGION_NAME,
                 "location": "media",
+                "default_acl": "public-read",
             },
         }
+        AWS_QUERYSTRING_AUTH = False
         
         # Override MEDIA_URL to point to S3
         MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
