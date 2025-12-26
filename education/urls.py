@@ -13,8 +13,8 @@ urlpatterns = [
     path('courses/<int:pk>/', views.course_detail, name='course_detail'),
     
     # Enrollments
-    path('<int:pk>/book/', views.enroll_service, name='book_service'),
-    path('courses/<int:pk>/book/', views.enroll_service, name='book_course'),
+    path('<int:pk>/book/', views.enroll_service_by_id, name='book_service'),
+    path('courses/<int:pk>/book/', views.enroll_course_by_id, name='book_course'),
     path('bookings/', views.all_enrollments, name='all_bookings'),
     path('my-bookings/', views.my_enrollments, name='my_bookings'),
     path('bookings/<str:enrollment_id>/status/', views.update_enrollment_status, name='update_booking_status'),

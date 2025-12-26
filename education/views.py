@@ -57,26 +57,8 @@ def service_detail(request, pk):
     })
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser])
-def enroll_service(request, pk):
-    """Book an educational service or course"""
-    # Check if it's a course or service
-    course = None
-    service = None
-    
-    try:
-        course = Course.objects.get(pk=pk)
-        service = course.service
-    except Course.DoesNotExist:
-        try:
-            service = EducationalService.objects.get(pk=pk)
-        except EducationalService.DoesNotExist:
-            return Response({
-                'error': 'Service or course not found'
-            }, status=status.HTTP_404_NOT_FOUND)
-    
+def _process_enrollment(request, service=None, course=None):
+    """Helper to process enrollment for either a service or a course"""
     # Check capacity
     if course:
         if course.enrolled_count >= course.capacity:
@@ -88,7 +70,9 @@ def enroll_service(request, pk):
             return Response({
                 'error': 'Already enrolled in this course'
             }, status=status.HTTP_400_BAD_REQUEST)
-    else:
+        
+        target_id = course.id
+    elif service:
         if service.enrolled_count >= service.capacity:
             return Response({
                 'error': 'Service is full'
@@ -98,17 +82,18 @@ def enroll_service(request, pk):
             return Response({
                 'error': 'Already booked this service'
             }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Copy to mutable dict to handle both JSON and MultiPart
+        
+        target_id = service.id
+    else:
+        return Response({'error': 'No service or course specified'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Copy to mutable dict
     enrollment_data = request.data.copy()
     if course:
-        enrollment_data['course'] = pk
+        enrollment_data['course'] = course.id
     else:
-        enrollment_data['service'] = pk
+        enrollment_data['service'] = service.id
 
-    # Ensure payment method fields are included (already in request.data but explicit check doesn't hurt)
-    # enrollment_data['payment_method'] = request.data.get('payment_method', 'card')
-    
     serializer = ServiceEnrollmentSerializer(data=enrollment_data, context={'request': request})
     
     if serializer.is_valid():
@@ -121,6 +106,36 @@ def enroll_service(request, pk):
         }, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def enroll_service_by_id(request, pk):
+    """Book an educational service by ID"""
+    try:
+        service = EducationalService.objects.get(pk=pk)
+    except EducationalService.DoesNotExist:
+        return Response({
+            'error': 'Educational service not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    return _process_enrollment(request, service=service)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def enroll_course_by_id(request, pk):
+    """Book a course by ID"""
+    try:
+        course = Course.objects.get(pk=pk)
+    except Course.DoesNotExist:
+        return Response({
+            'error': 'Course not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    return _process_enrollment(request, course=course)
 
 
 @api_view(['GET'])

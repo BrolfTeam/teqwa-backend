@@ -307,7 +307,7 @@ REST_FRAMEWORK = {
     ],
     
     # Exception handling
-    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    'EXCEPTION_HANDLER': 'TeqwaCore.exceptions.custom_exception_handler',
     
     # Content negotiation
     'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'rest_framework.negotiation.DefaultContentNegotiation',
