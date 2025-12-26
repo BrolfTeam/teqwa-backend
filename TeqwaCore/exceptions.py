@@ -26,7 +26,7 @@ def custom_exception_handler(exc, context):
         if isinstance(exc, DatabaseError):
             data = {
                 'error': 'Database error', 
-                'detail': 'A database error occurred.'
+                'detail': f'Database error: {str(exc)}'
             }
             # Log the actual error for admins to see
             logger.error(f"Database Error: {exc}", exc_info=True)
