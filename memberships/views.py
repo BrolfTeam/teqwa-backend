@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from .models import MembershipTier, UserMembership
 from .serializers import MembershipTierSerializer, UserMembershipSerializer
@@ -20,7 +20,7 @@ class UserMembershipViewSet(viewsets.ModelViewSet):
     """
     serializer_class = UserMembershipSerializer
     permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     http_method_names = ['get', 'post', 'head', 'options']
 
     def get_queryset(self):

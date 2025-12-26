@@ -39,12 +39,12 @@ def donation_list(request):
         })
 
 
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import parser_classes
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@parser_classes([MultiPartParser, FormParser])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def create_donation(request):
     """Create a new donation"""
     
